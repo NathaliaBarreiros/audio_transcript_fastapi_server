@@ -1,3 +1,4 @@
 {
-    "python.analysis.extraPaths": ["../fastapi_server"]
+  "python.analysis.extraPaths": ["../fastapi_server"],
+  "python.formatting.provider": "black"
 }
