@@ -3,6 +3,7 @@ from email.mime import audio
 from importlib.resources import path
 import io
 import os
+import glob
 from typing import Optional
 import base64
 from urllib import response
@@ -123,9 +124,21 @@ async def upload_audios(audios: list[UploadFile] = File(...)):
     tags=["Upload base64-format audios"],
 )
 async def upload_base64_audios(audios: list[AudioBase64] = Body(...)):
+
+    model: str = "~/audio_transcript_fastapi_server/fastapi_server/models"
+    dir_name = os.path.expanduser(model)
+    output_graph, scorer = pr.resolve_models(dir_name)
+    model_retval: List[str] = pr.load_model(output_graph, scorer)
+
     all_names: list[str] = []
     all_datas: list[str] = []
     all_decode: list[str] = []
+    aggresive = 1
+    transcriptions: list[str] = []
+    new_data: list[str] = []
+    final_data: list[str] = []
+    header: list[str] = ["audio_name", "transcriptions"]
+
     for i in range(len(audios)):
         name = audios[i].audio_name
         data = audios[i].data_base64
@@ -133,26 +146,41 @@ async def upload_base64_audios(audios: list[AudioBase64] = Body(...)):
         all_names.append(name)
         all_datas.append(data)
         all_decode.append(decode)
+
         filename = "%s.wav" % name
-        print(all_decode)
         with open(filename, "wb") as f:
             f.write(decode)
 
-        # prcm_data, sample_rate, audio_length = pr.read_wave(f.write(decode))
-    print("ALL DATAS")
-    # print(all_datas)
-    print("MY FILE")
-    # print(my_file)
-    # print(type(my_file))
-    print("READ WAVE INFO")
-    # print(sample_rate)
-    # print(decodes)
-    return f"You have uploaded {len(all_names)} audios which names are: {all_names}, which info is: {all_datas}"
+        cwd = os.getcwd()
 
+        files = glob.glob(cwd + "/" + name + ".wav")
 
-# imgstr = base64_image
-# imgdata = base64.b64decode(imgstr)
-# name = "au1"
-# filename = "%s.wav" % name
-# with open(filename, "wb") as f:
-#     f.write(imgdata)
+        segments, sample_rate, audio_length = pr.vad_segment_generator(
+            files[0], aggresive
+        )
+        # print(sample_rate)
+        for k, segment in enumerate(segments):
+            audio = np.frombuffer(segment, dtype=np.int16)
+            output = pr.stt(model_retval[0], audio)
+            transcript = output[0]
+        transcriptions.append(transcript)
+        new_data = [all_names[i], transcriptions[i]]
+        final_data.append(new_data)
+    # print("SEGMENTS")
+    # print(segments)
+    # print("NEW DATA")
+    # print(new_data)
+    # print("FINAL DATA")
+    # print(final_data)
+    # print(len(audios))
+    # print("TRANCRIPTIONS")
+    # print(transcriptions)
+
+    new_df = pd.DataFrame(final_data, columns=header)
+    stream = io.StringIO()
+    new_df.to_csv(stream, index=False)
+    response: Response = StreamingResponse(
+        iter([stream.getvalue()]), media_type="text/csv"
+    )
+    response.headers["Content-Disposition"] = "attachment; filename=my-file.csv"
+    return response
