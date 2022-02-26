@@ -1,0 +1,3 @@
+name,file
+audio1.wav,<tempfile.SpooledTemporaryFile object at 0x7fc1c8a710d0>
+audio3.wav,<tempfile.SpooledTemporaryFile object at 0x7fc1c8a71880>

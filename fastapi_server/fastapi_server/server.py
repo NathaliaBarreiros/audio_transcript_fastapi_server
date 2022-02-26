@@ -4,6 +4,7 @@ from importlib.resources import path
 from os import stat
 from typing import Optional
 import base64
+import pandas as pd
 
 # Pydantic
 from pydantic import BaseModel
@@ -47,7 +48,15 @@ async def home() -> str:
 )
 async def upload_audios(audios: list[UploadFile] = File(...)):
     filenames = [audio.filename for audio in audios]
-
+    audio_data = [audio.file for audio in audios]
+    new_data = []
+    final_data = []
+    header = ["name", "file"]
+    for i in range(len(audios)):
+        new_data = [filenames[i], audio_data[i]]
+        final_data.append(new_data)
+    new_df = pd.DataFrame(final_data, columns=header)
+    print(new_df)
     return f"You have uploaded {len(audios)} audios which names are: {filenames}"
 
 
@@ -58,16 +67,19 @@ async def upload_audios(audios: list[UploadFile] = File(...)):
     tags=["Upload base64-format audios"],
 )
 async def upload_base64_audios(audios: list[AudioBase64] = Body(...)):
-    names_final: list[str] = []
+    all_names: list[str] = []
     for i in range(len(audios)):
         names = audios[i].audio_name
-        names_final.append(names)
-    return f"You have uploaded {len(names_final)} audios which names are: {names_final}"
+        all_names.append(names)
+    return f"You have uploaded {len(all_names)} audios which names are: {all_names}"
+
+
+@app.get("/get-dataframe/")
+async def get_dataframe():
+    pass
 
 
 # EX:
-
-
 @app.post(path="/post-audio/")
 async def post_audio(audio: UploadFile = File(...)):
 

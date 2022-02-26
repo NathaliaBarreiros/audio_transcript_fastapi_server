@@ -35,16 +35,21 @@ class Preprocessing:
         aggressiveness: int,
     ) -> None:
         self.path = path
-        self.pcm_data = self.read_wave(path)["pcm_data"]
-        self.sample_rate = self.read_wave(path)["sample_rate"]
-        self.duration = self.read_wave(path)["duration"]
         self.frame_duration_ms = frame_duration_ms
         self.padding_duration_ms = padding_duration_ms
-        self.vad = self.vad_segment_generator(path, aggressiveness)[3]
-        self.frames = list(
-            self.frame_generator(frame_duration_ms, self.pcm_data, self.sample_rate)
-        )
         self.aggressiveness = aggressiveness
+
+        # self.pcm_data = self.read_wave(path)["pcm_data"]
+
+        # self.sample_rate = self.read_wave(path)["sample_rate"]
+
+        # self.duration = self.read_wave(path)["duration"]
+
+        # self.vad = self.vad_segment_generator(path, aggressiveness)[3]
+
+        # self.frames = list(
+        #     self.frame_generator(frame_duration_ms, self.pcm_data, self.sample_rate)
+        # )
 
     def read_wave(self, path: str) -> Dict:
         """
@@ -77,12 +82,12 @@ class Preprocessing:
         Generates audio frames from PCM audio data Inputs: desire frame duration in ms, the PCM data, the sample rate.
         Yields frames of the requested duration.
         """
-        n = int(self.sample_rate * (frame_duration_ms / 1000.0) * 2)
+        n = int(sample_rate * (frame_duration_ms / 1000.0) * 2)
         offset: int = 0
         timestamp: float = 0.0
         duration: float = (float(n) / sample_rate) / 2.0
         while offset + n < len(pcm_data):
-            yield Frame(self.pcm_data[offset : offset + n], timestamp, duration)
+            yield Frame(pcm_data[offset : offset + n], timestamp, duration)
             timestamp += duration
             offset += n
 
