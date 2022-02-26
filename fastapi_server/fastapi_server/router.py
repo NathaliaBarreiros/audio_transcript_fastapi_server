@@ -140,6 +140,8 @@ async def upload_base64_audios(audios: list[AudioBase64] = Body(...)):
     header: list[str] = ["audio_name", "transcriptions"]
 
     for i in range(len(audios)):
+        print("ENTERING")
+        print(i)
         name = audios[i].audio_name
         data = audios[i].data_base64
         decode = base64.b64decode(data)
@@ -166,15 +168,20 @@ async def upload_base64_audios(audios: list[AudioBase64] = Body(...)):
         transcriptions.append(transcript)
         new_data = [all_names[i], transcriptions[i]]
         final_data.append(new_data)
-    # print("SEGMENTS")
-    # print(segments)
-    # print("NEW DATA")
-    # print(new_data)
-    # print("FINAL DATA")
-    # print(final_data)
-    # print(len(audios))
-    # print("TRANCRIPTIONS")
-    # print(transcriptions)
+    print("SEGMENTS")
+    print(segments)
+    print("NEW DATA")
+    print(new_data)
+    print("FINAL DATA")
+    print(final_data)
+    print(len(audios))
+    print("TRANCRIPTIONS")
+    print(transcriptions)
+    print(cwd)
+
+    dir_files = glob.glob(cwd + "/*.wav")
+    for file in dir_files:
+        os.unlink(file)
 
     new_df = pd.DataFrame(final_data, columns=header)
     stream = io.StringIO()
