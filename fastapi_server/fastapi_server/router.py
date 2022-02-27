@@ -140,8 +140,6 @@ async def upload_base64_audios(audios: list[AudioBase64] = Body(...)):
     header: list[str] = ["audio_name", "transcriptions"]
 
     for i in range(len(audios)):
-        print("ENTERING")
-        print(i)
         name = audios[i].audio_name
         data = audios[i].data_base64
         decode = base64.b64decode(data)
@@ -150,12 +148,33 @@ async def upload_base64_audios(audios: list[AudioBase64] = Body(...)):
         all_decode.append(decode)
 
         filename = "%s.wav" % name
+        buffer = io.BytesIO(decode)
         with open(filename, "wb") as f:
-            f.write(decode)
+            f.write(buffer.getvalue())
+
+        # this gives error
+        # buffer = io.BytesIO(decode)
+        # with io.BytesIO() as f:
+        #     f.write(buffer.getvalue())
+        #     # print(buffer.getvalue())
+        #     print(buffer.getbuffer())
+        # print("aqui")
+        # print(buffer)
+        # print(type(buffer))
+
+        # segments, sample_rate, audio_length = pr.vad_segment_generator(
+        #     buffer.getbuffer(), aggresive
+        # )
+        # print(sample_rate)
+        # hasta aqui
+
+        # with open(filename, "wb") as f:
+        #     f.write(decode)
 
         cwd = os.getcwd()
 
         files = glob.glob(cwd + "/" + name + ".wav")
+        print(files)
 
         segments, sample_rate, audio_length = pr.vad_segment_generator(
             files[0], aggresive
@@ -168,16 +187,16 @@ async def upload_base64_audios(audios: list[AudioBase64] = Body(...)):
         transcriptions.append(transcript)
         new_data = [all_names[i], transcriptions[i]]
         final_data.append(new_data)
-    print("SEGMENTS")
-    print(segments)
-    print("NEW DATA")
-    print(new_data)
-    print("FINAL DATA")
-    print(final_data)
-    print(len(audios))
-    print("TRANCRIPTIONS")
-    print(transcriptions)
-    print(cwd)
+    # print("SEGMENTS")
+    # print(segments)
+    # print("NEW DATA")
+    # print(new_data)
+    # print("FINAL DATA")
+    # print(final_data)
+    # print(len(audios))
+    # print("TRANCRIPTIONS")
+    # print(transcriptions)
+    # print(cwd)
 
     dir_files = glob.glob(cwd + "/*.wav")
     for file in dir_files:
@@ -191,3 +210,4 @@ async def upload_base64_audios(audios: list[AudioBase64] = Body(...)):
     )
     response.headers["Content-Disposition"] = "attachment; filename=my-file.csv"
     return response
+    # return "ok"
