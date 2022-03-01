@@ -15,6 +15,7 @@ aiofiles = "^0.8.0"
 deepspeech = "^0.9.3"
 webrtcvad = "^2.0.10"
 PyQt5 = "^5.15.6"
+tortoise-orm = "^0.18.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
