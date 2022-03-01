@@ -76,11 +76,16 @@ async def upload_audios(audios: list[UploadFile] = File(...)):
         audio_data = audios[i].file
         wave_file = audio_data
 
+        # print("INFO")
+        # print(audio_data)
+        # print(type(audio_data))
+
+        # AQUI CONTINUA LO CORRECTO
         wave_instance = pr(wave_file, 30, 300, aggresive)
         segments, sample_rate, audio_length, vad = wave_instance.vad_segment_generator(
             wave_file, aggresive
         )
-        # print(segments)
+        print(segments)
         # print(sample_rate)
         # print(audio_length)
         # print(vad)
@@ -111,3 +116,4 @@ async def upload_audios(audios: list[UploadFile] = File(...)):
     )
     response.headers["Content-Disposition"] = "attachment; filename=my-file.csv"
     return response
+    # return "ok"

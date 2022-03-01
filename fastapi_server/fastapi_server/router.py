@@ -148,45 +148,54 @@ async def upload_base64_audios(audios: list[AudioBase64] = Body(...)):
         all_decode.append(decode)
 
         filename = "%s.wav" % name
-        buffer = io.BytesIO(decode)
-        with open(filename, "wb") as f:
-            f.write(buffer.getvalue())
 
-        # this gives error
         # buffer = io.BytesIO(decode)
-        # with io.BytesIO() as f:
-        #     f.write(buffer.getvalue())
-        #     # print(buffer.getvalue())
-        #     print(buffer.getbuffer())
-        # print("aqui")
-        # print(buffer)
-        # print(type(buffer))
-
-        # segments, sample_rate, audio_length = pr.vad_segment_generator(
-        #     buffer.getbuffer(), aggresive
-        # )
-        # print(sample_rate)
-        # hasta aqui
-
         # with open(filename, "wb") as f:
-        #     f.write(decode)
+        #     f.write(buffer.getvalue())
 
-        cwd = os.getcwd()
+        # print(type(decode))
+        with io.BytesIO() as buffer:
+            buffer.write(decode)
+            # buffer.getvalue()
+            buffer.seek(0)
+            # print(buffer)
 
-        files = glob.glob(cwd + "/" + name + ".wav")
-        print(files)
+            # this gives error
+            # buffer = io.BytesIO(decode)
+            # with io.BytesIO() as f:
+            #     f.write(buffer.getvalue())
+            #     # print(buffer.getvalue())
+            #     print(buffer.getbuffer())
+            # print("aqui")
+            # print(buffer)
+            # print(type(buffer))
 
-        segments, sample_rate, audio_length = pr.vad_segment_generator(
-            files[0], aggresive
-        )
-        # print(sample_rate)
-        for k, segment in enumerate(segments):
-            audio = np.frombuffer(segment, dtype=np.int16)
-            output = pr.stt(model_retval[0], audio)
-            transcript = output[0]
-        transcriptions.append(transcript)
-        new_data = [all_names[i], transcriptions[i]]
-        final_data.append(new_data)
+            segments, sample_rate, audio_length = pr.vad_segment_generator(
+                buffer, aggresive
+            )
+            # print(sample_rate)
+            # hasta aqui
+
+            # with open(filename, "wb") as f:
+            #     f.write(decode)
+
+            #     cwd = os.getcwd()
+
+            #     files = glob.glob(cwd + "/" + name + ".wav")
+            #     # print(files)
+
+            #     segments, sample_rate, audio_length = pr.vad_segment_generator(
+            #         files[0], aggresive
+            #     )
+            #     # print(sample_rate)
+
+            for k, segment in enumerate(segments):
+                audio = np.frombuffer(segment, dtype=np.int16)
+                output = pr.stt(model_retval[0], audio)
+                transcript = output[0]
+            transcriptions.append(transcript)
+            new_data = [all_names[i], transcriptions[i]]
+            final_data.append(new_data)
     # print("SEGMENTS")
     # print(segments)
     # print("NEW DATA")
@@ -196,11 +205,11 @@ async def upload_base64_audios(audios: list[AudioBase64] = Body(...)):
     # print(len(audios))
     # print("TRANCRIPTIONS")
     # print(transcriptions)
-    # print(cwd)
+    # # print(cwd)
 
-    dir_files = glob.glob(cwd + "/*.wav")
-    for file in dir_files:
-        os.unlink(file)
+    # dir_files = glob.glob(cwd + "/*.wav")
+    # for file in dir_files:
+    #     os.unlink(file)
 
     new_df = pd.DataFrame(final_data, columns=header)
     stream = io.StringIO()
@@ -210,4 +219,3 @@ async def upload_base64_audios(audios: list[AudioBase64] = Body(...)):
     )
     response.headers["Content-Disposition"] = "attachment; filename=my-file.csv"
     return response
-    # return "ok"

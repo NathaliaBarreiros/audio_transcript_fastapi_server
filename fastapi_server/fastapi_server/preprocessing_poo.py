@@ -38,8 +38,9 @@ class Preprocessing:
         self.frame_duration_ms = frame_duration_ms
         self.padding_duration_ms = padding_duration_ms
         self.aggressiveness = aggressiveness
-
-        # self.pcm_data = self.read_wave(path)["pcm_data"]
+        # w = self.read_wave(path)
+        # self.pcm_data = w["pcm_data"]
+        # self.pcm_data = self.read_wave(self.path)["pcm_data"]
 
         # self.sample_rate = self.read_wave(path)["sample_rate"]
 
