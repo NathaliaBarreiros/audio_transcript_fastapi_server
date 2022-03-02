@@ -28,6 +28,8 @@ share/python-wheels/
 MANIFEST
 models/
 helps/
+core_code/
+
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
