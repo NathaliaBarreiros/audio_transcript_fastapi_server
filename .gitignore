@@ -29,8 +29,13 @@ MANIFEST
 deepspeech_models/
 helps/
 core_code/
+
+
 # VSCode
 .vscode
+
+
+.vscode/settings.json
 
 
 # PyInstaller
