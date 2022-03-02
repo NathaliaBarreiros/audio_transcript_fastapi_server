@@ -251,7 +251,7 @@ async def upload_base64_audios(
 
 register_tortoise(
     app,
-    db_url="sqlite://users.db",
+    db_url="sqlite://users.sqlite3",
     modules={"models": ["server"]},
     generate_schemas=True,
     add_exception_handlers=True,
