@@ -21,12 +21,12 @@ bcrypt = "^3.2.0"
 PyJWT = "^2.3.0"
 python-dotenv = "^0.19.2"
 python-magic = "^0.4.25"
+numpy = "^1.22.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
 black = "^22.1.0"
 jupyter = "^1.0.0"
-numpy = "^1.22.2"
 ipykernel = "^6.9.1"
 mypy = "^0.931"
 
