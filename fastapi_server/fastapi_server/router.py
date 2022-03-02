@@ -2,6 +2,7 @@
 from email.mime import audio
 from importlib.resources import path
 import io
+import mimetypes
 import os
 import glob
 from typing import Optional
@@ -9,6 +10,7 @@ import base64
 from urllib import response
 import pandas as pd
 import numpy as np
+import magic
 
 # --
 import collections
@@ -23,7 +25,7 @@ from typing import List
 import fastapi_server.preprocessing_f as pr
 
 # Pydantic
-from pydantic import BaseModel
+from pydantic import BaseModel, BaseConfig, create_model
 from pydantic import Field
 
 # FastAPI
@@ -34,6 +36,7 @@ from starlette.types import Message
 from fastapi.responses import FileResponse
 from fastapi.responses import StreamingResponse
 from fastapi import HTTPException
+
 
 app = FastAPI(
     title="Audio Transcript Service",
@@ -48,6 +51,13 @@ class AudioBase64(BaseModel):
         ...,
         min_length=1,
     )
+
+
+# class ResponseBase(BaseModel):
+#     message: str
+#     status: int
+#     data: dict
+# data: StreamingResponse
 
 
 @app.post(
@@ -114,7 +124,19 @@ async def upload_audios(audios: list[UploadFile] = File(...)):
         iter([stream.getvalue()]), media_type="text/csv"
     )
     response.headers["Content-Disposition"] = "attachment; filename=my-file.csv"
+
     return response
+
+
+def get_extension_base64(audios: list):
+    for j in range(len(audios)):
+        data = audios[j].data_base64
+        decode = base64.b64decode(data)
+        mime_type = magic.from_buffer(decode, mime=True)
+        file_ext = mimetypes.guess_extension(mime_type)
+        if file_ext != ".wav":
+            return False
+        return True
 
 
 @app.post(
@@ -124,6 +146,13 @@ async def upload_audios(audios: list[UploadFile] = File(...)):
     tags=["Upload base64-format audios"],
 )
 async def upload_base64_audios(audios: list[AudioBase64] = Body(...)):
+
+    if get_extension_base64(audios) == False:
+        # print("ERROR")
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Files uploaded are not .wav audios.",
+        )
 
     model: str = "~/audio_transcript_fastapi_server/fastapi_server/models"
     dir_name = os.path.expanduser(model)
@@ -147,7 +176,7 @@ async def upload_base64_audios(audios: list[AudioBase64] = Body(...)):
         all_datas.append(data)
         all_decode.append(decode)
 
-        filename = "%s.wav" % name
+        # filename = "%s.wav" % name
 
         # buffer = io.BytesIO(decode)
         # with open(filename, "wb") as f:
@@ -168,6 +197,7 @@ async def upload_base64_audios(audios: list[AudioBase64] = Body(...)):
             #     print(buffer.getbuffer())
             # print("aqui")
             # print(buffer)
+            # print(type(buffer))
             # print(type(buffer))
 
             segments, sample_rate, audio_length = pr.vad_segment_generator(
@@ -219,3 +249,5 @@ async def upload_base64_audios(audios: list[AudioBase64] = Body(...)):
     )
     response.headers["Content-Disposition"] = "attachment; filename=my-file.csv"
     return response
+
+    # return "PRUEBA"
