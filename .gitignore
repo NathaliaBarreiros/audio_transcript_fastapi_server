@@ -26,6 +26,11 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+deepspeech_models/
+helps/
+core_code/
+.vscode/
+
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

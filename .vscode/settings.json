@@ -1,0 +1,4 @@
+{
+  "python.analysis.extraPaths": ["../fastapi_server", "../fastapi_server/fastapi_server/helps"],
+  "python.formatting.provider": "black"
+}
