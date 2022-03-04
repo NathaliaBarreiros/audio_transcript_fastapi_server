@@ -1,7 +1,8 @@
-from passlib.hash import bcrypt
+from pydantic import BaseModel, Field
 from tortoise import fields
 from tortoise.models import Model
 from tortoise.contrib.pydantic import pydantic_model_creator
+from passlib.hash import bcrypt
 
 
 class User(Model):
@@ -16,3 +17,9 @@ class User(Model):
 
 User_Pydantic = pydantic_model_creator(User, name="User")
 UserIn_Pydantic = pydantic_model_creator(User, name="UserIn", exclude_readonly=True)
+
+
+class UserShow(BaseModel):
+    id: int
+    username: str
+    email: str

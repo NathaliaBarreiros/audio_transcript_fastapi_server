@@ -22,6 +22,7 @@ PyJWT = "^2.3.0"
 python-dotenv = "^0.19.2"
 python-magic = "^0.4.25"
 numpy = "^1.22.2"
+asyncio = "^3.4.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

@@ -1,6 +1,7 @@
 """Libraries import
 """
 import contextlib
+from email.mime import audio
 import wave
 import collections
 import webrtcvad
@@ -8,6 +9,7 @@ from typing import Generator, List, Dict, Tuple
 from deepspeech import Model
 from timeit import default_timer as timer
 import glob
+import asyncio
 import numpy as np
 
 
@@ -119,12 +121,13 @@ class Preprocessing:
         if voiced_frames:
             yield b"".join([f.bytes for f in voiced_frames])
 
-    def vad_segment_generator(self, path: str, aggressiveness: int) -> List:
+    async def vad_segment_generator(self, path: str, aggressiveness: int) -> List:
         """
         Segment generator that will return the segment of byte data for the audio, but also its metadata.
         Inputs: .wav file path.
         Returns: tuple of audio segments, sample_rate, audio_length, vad.
         """
+        loop = asyncio.get_event_loop()
         read_instance = self.read_wave(path)
         assert (
             read_instance["sample_rate"] == 16000
@@ -134,10 +137,15 @@ class Preprocessing:
         )
         frame_instance = list(frame_instance)
         vad = webrtcvad.Vad(int(aggressiveness))
-        segments = self.vad_collector(
-            read_instance["sample_rate"], 30, 300, vad, frame_instance
+        segments = await loop.run_in_executor(
+            None,
+            self.vad_collector,
+            read_instance["sample_rate"],
+            30,
+            300,
+            vad,
+            frame_instance,
         )
-
         return [segments, read_instance["sample_rate"], read_instance["duration"], vad]
 
 
@@ -175,17 +183,21 @@ class DeepSpeechModel:
 
         return [ds, model_load_end, scorer_load_end]
 
+    @asyncio.coroutine
     def transcript_audio_segments(
-        self, ds: Model, audio_stt: np.ndarray
+        self,
+        ds: Model,
+        audio_stt: np.ndarray,
     ) -> list[str, float]:
         """
         Function to transcript audio segments.
         Input: Deepspeech object, audio as np.ndarray type.
         Returns: a list [Inference, Inference Time].
         """
+        loop = asyncio.get_event_loop()
         inference_time: float = 0.0
         inference_start = timer()
-        output: str = ds.stt(audio_stt)
+        output = yield from loop.run_in_executor(None, ds.stt, audio_stt)
 
         inference_end = timer() - inference_start
         inference_time += inference_end

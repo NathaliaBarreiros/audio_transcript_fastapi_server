@@ -1,5 +1,6 @@
 import os
 import io
+from black import out
 import jwt
 import base64
 import mimetypes
@@ -22,7 +23,12 @@ from tortoise.contrib.fastapi import register_tortoise
 from passlib.hash import bcrypt
 from fastapi_server.app.preprocessing import Preprocessing as pr
 from fastapi_server.app.preprocessing import DeepSpeechModel as ds
-from fastapi_server.models.user_model import User, User_Pydantic, UserIn_Pydantic
+from fastapi_server.models.user_model import (
+    User,
+    User_Pydantic,
+    UserIn_Pydantic,
+    UserShow,
+)
 from fastapi_server.models.audiobase64_model import AudioBase64
 from fastapi_server.app.config import settings
 
@@ -105,7 +111,7 @@ async def generate_token(form_data: OAuth2PasswordRequestForm = Depends()):
 
 @app.post(
     path="/users/",
-    response_model=User_Pydantic,
+    response_model=UserShow,
     status_code=status.HTTP_200_OK,
     description="Enter user information, specify username, email, password.",
     tags=["Create a user"],
@@ -154,13 +160,16 @@ async def upload_audios(
         audio_data = audios[i].file
         wave_file = audio_data
         wave_instance = pr(wave_file, 30, 300, aggresive)
-        segments, sample_rate, audio_length, vad = wave_instance.vad_segment_generator(
-            wave_file, aggresive
-        )
+        (
+            segments,
+            sample_rate,
+            audio_length,
+            vad,
+        ) = await wave_instance.vad_segment_generator(wave_file, aggresive)
 
         for k, segment in enumerate(segments):
             audio = np.frombuffer(segment, dtype=np.int16)
-            output = ds_instance.transcript_audio_segments(model_retval[0], audio)
+            output = await ds_instance.transcript_audio_segments(model_retval[0], audio)
             transcript = output[0]
         transcriptions.append(transcript)
         new_data = [filenames[i], transcriptions[i]]
@@ -202,7 +211,6 @@ async def upload_base64_audios(
     model_retval: list[str] = ds_instance.load_models(output_graph, scorer)
 
     aggresive = 1
-    # filenames: list[str] = [audio.filename for audio in audios]
     all_names: list[str] = []
     all_datas: list[str] = []
     all_decode: list[str] = []
@@ -229,11 +237,13 @@ async def upload_base64_audios(
                 sample_rate,
                 audio_length,
                 vad,
-            ) = wave_instance.vad_segment_generator(buffer, aggresive)
+            ) = await wave_instance.vad_segment_generator(buffer, aggresive)
 
             for k, segment in enumerate(segments):
                 audio = np.frombuffer(segment, dtype=np.int16)
-                output = ds_instance.transcript_audio_segments(model_retval[0], audio)
+                output = await ds_instance.transcript_audio_segments(
+                    model_retval[0], audio
+                )
                 transcript = output[0]
             transcriptions.append(transcript)
             new_data = [all_names[i], transcriptions[i]]
