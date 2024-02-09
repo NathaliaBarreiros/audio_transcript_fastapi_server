@@ -6,7 +6,7 @@ authors = ["Nath <nathalia.barreirosf@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-fastapi = "^0.74.1"
+fastapi = "^0.109.1"
 uvicorn = "^0.17.5"
 python-multipart = "^0.0.5"
 pydantic = {extras = ["email"], version = "^1.9.0"}
