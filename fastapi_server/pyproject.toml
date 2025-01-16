@@ -8,7 +8,7 @@ authors = ["Nath <nathalia.barreirosf@gmail.com>"]
 python = "^3.9"
 fastapi = "^0.109.1"
 uvicorn = "^0.17.5"
-python-multipart = "^0.0.7"
+python-multipart = "^0.0.18"
 pydantic = {extras = ["email"], version = "^1.10.13"}
 pandas = "^1.4.1"
 aiofiles = "^0.8.0"
